@@ -7,8 +7,9 @@ A complete OAuth2 authentication client built with Next.js and TypeScript, desig
 - **Secure OAuth2 Flow**: Complete OAuth2 implementation with GitHub as the provider
 - **Token Management**: Automatic token refresh with HttpOnly cookies for security
 - **Protected Routes**: Client-side route protection for authenticated users
+- **Multiple API Testing**: Interactive buttons to test different protected endpoints
 - **Error Handling**: Comprehensive error handling and user feedback
-- **TypeScript**: Full TypeScript support for type safety
+- **TypeScript**: Full TypeScript support with proper interface definitions
 - **Modern React**: Uses React 18+ features and hooks
 
 ## Architecture
@@ -79,6 +80,15 @@ src/
 
 - Automatic redirection for unauthenticated users
 - Loading states during authentication checks
+- Interactive API testing with multiple endpoints
+
+### User Profile Page
+
+The `/my-page` route provides:
+- **User Data Fetching**: Test the `/api/v1/user/me` endpoint
+- **Role-based Data**: Test the `/api/v1/user/for-user` endpoint (USER role required)
+- **Real-time Results**: View API responses and errors in formatted JSON
+- **Independent Testing**: Each API call has its own loading state and error handling
 
 ### Token Security
 
@@ -90,11 +100,55 @@ src/
 
 The client expects these endpoints on the backend:
 
+### Authentication Endpoints
 - `GET /oauth2/authorization/github` - Initiate OAuth2 flow
 - `POST /api/v1/auth/token` - Exchange authorization code for tokens
 - `POST /api/v1/auth/refresh` - Refresh access token
 - `POST /api/v1/auth/logout` - Logout and invalidate tokens
-- `GET /api/v1/user/me` - Get user profile (protected)
+
+### Protected User Endpoints
+- `GET /api/v1/user/me` - Get user email (returns `{"email": "user@example.com"}`)
+- `GET /api/v1/user/for-user` - Get user-role specific data (returns `{"message": "This data is only for users with the USER role."}`)
+
+### Expected Response Formats
+
+```typescript
+// /api/v1/user/me response
+{
+  "email": "user@example.com"
+}
+
+// /api/v1/user/for-user response  
+{
+  "message": "This data is only for users with the USER role."
+}
+
+// Token endpoints response
+{
+  "accessToken": "jwt-token-here"
+}
+```
+
+## Usage
+
+### Testing the Application
+
+1. **Login Flow**:
+   - Visit `http://localhost:3000`
+   - Click "Login with GitHub"
+   - Complete OAuth2 flow
+   - Get redirected to profile page
+
+2. **API Testing**:
+   - Use "Fetch User Data" to test `/api/v1/user/me`
+   - Use "Fetch For-User Data" to test `/api/v1/user/for-user`
+   - View responses and errors in real-time
+   - Each button works independently with its own loading state
+
+3. **Security Testing**:
+   - Automatic token refresh on 401 errors
+   - Session persistence across page refreshes
+   - Clean logout with token invalidation
 
 ## Configuration
 
@@ -104,12 +158,31 @@ Update the API base URL in `src/services/authService.ts`:
 const API_BASE_URL = 'http://localhost:8080';
 ```
 
+### TypeScript Interfaces
+
+The project includes proper TypeScript definitions:
+
+```typescript
+// User data from /api/v1/user/me
+interface UserData {
+    email: string;
+    [key: string]: unknown;
+}
+
+// For-user data from /api/v1/user/for-user
+interface ForUserData {
+    message: string;
+    [key: string]: unknown;
+}
+```
+
 ## Security Features
 
 - **XSS Protection**: No sensitive data in localStorage/sessionStorage
 - **CSRF Protection**: HttpOnly cookies for refresh tokens
 - **Automatic Cleanup**: Tokens cleared on logout or session expiry
 - **Route Protection**: Client-side route guards
+- **Role-based Access**: Different endpoints for different user roles
 
 ## Development
 
